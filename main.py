@@ -53,17 +53,6 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 # Display some of the images within the dataset the ensure that nothing is messed up
 
 class_names = train_ds.class_names
-print(class_names)
-
-plt.figure(figsize=(10, 10))
-for images, labels in train_ds.take(1):
-  for i in range(9):
-    ax = plt.subplot(3, 3, i + 1)
-    plt.imshow(images[i].numpy().astype("uint8"))
-    plt.title(class_names[labels[i]])
-    plt.axis("off")
-plt.show()
-
 
 for image_batch, labels_batch in train_ds:
   print(image_batch.shape)
@@ -82,14 +71,58 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 num_classes = len(class_names)
 
+
+
+
+# Notice that the accuracy for training data is going up really fast but the accuracy for test data is kinda stuck
+# This is because the model is overfit: The model knows the training data too well and recognizes stuff that doesn't actually matter
+# Loss is going down for training but up for testing because of this overfitting phenomenon
+# Loss: penalty for bad prediction
+
+# Overfitting in more prevelant with small training data (something that we have here since I can't be bothered to get bigger datasets and takes too much space and might blow my computer up)
+
+# One solution is to augmenmt data to make a bigger dataset 
+# (aka messing with the photos a bit so that they are still beliveable but different to the comupter)
+
+data_augmentation = keras.Sequential(
+  [
+    layers.RandomFlip("horizontal",
+                      input_shape=(img_height,
+                                  img_width,
+                                  3)),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.1),
+  ]
+)
+
+# Show an example of data augmentation
+
+plt.figure(figsize=(10, 10))
+for images, _ in train_ds.take(1):
+  for i in range(9):
+    augmented_images = data_augmentation(images)
+    ax = plt.subplot(3, 3, i + 1)
+    plt.imshow(augmented_images[0].numpy().astype("uint8"))
+    plt.axis("off")
+plt.show()
+
+
+# Another method is data dropout, but is pretty complex so don't fully understand and can't really explain
+# Basically it is messing with the neuro-network behind this so that the model is better
+
+
+# Now we make a new model that utilized these techniques
+
 model = Sequential([
-  layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+  data_augmentation,
+  layers.Rescaling(1./255),
   layers.Conv2D(16, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
   layers.Conv2D(32, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
   layers.Conv2D(64, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
+  layers.Dropout(0.2),
   layers.Flatten(),
   layers.Dense(128, activation='relu'),
   layers.Dense(num_classes)
@@ -102,16 +135,19 @@ model.compile(optimizer='adam',
 model.summary()
 
 
-# Actually do the training with everything setup
 
-epochs=10
+
+# Train the new model
+
+epochs = 15
 history = model.fit(
   train_ds,
   validation_data=val_ds,
   epochs=epochs
 )
 
-# Visualize the data via graphs
+
+# Visualize the new results
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -134,11 +170,5 @@ plt.plot(epochs_range, val_loss, label='Validation Loss')
 plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
-
-# Notice that the accuracy for training data is going up really fast but the accuracy for test data is kinda stuck
-# This is because the model is overfit: The model knows the training data too well and recognizes stuff that doesn't actually matter
-# Loss is going down for training but up for actual
-# Loss: penalty for bad prediction
-
 
 
