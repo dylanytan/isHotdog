@@ -95,17 +95,6 @@ data_augmentation = keras.Sequential(
   ]
 )
 
-# Show an example of data augmentation
-
-plt.figure(figsize=(10, 10))
-for images, _ in train_ds.take(1):
-  for i in range(9):
-    augmented_images = data_augmentation(images)
-    ax = plt.subplot(3, 3, i + 1)
-    plt.imshow(augmented_images[0].numpy().astype("uint8"))
-    plt.axis("off")
-plt.show()
-
 
 # Another method is data dropout, but is pretty complex so don't fully understand and can't really explain
 # Basically it is messing with the neuro-network behind this so that the model is better
@@ -147,28 +136,24 @@ history = model.fit(
 )
 
 
-# Visualize the new results
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
+# Now that we have a decent model, lets predict on new data
+# Picture from google
+# website url: https://www.epicurious.com/recipes/food/views/panchos-argentinos-argentine-style-hot-dogs
 
-loss = history.history['loss']
-val_loss = history.history['val_loss']
+imageURl = "https://assets.epicurious.com/photos/5cfea9780fb62aae4d2bec74/1:1/w_2560%2Cc_limit/ArgentineHotDog_HERO_060619_2179.jpg"
+imagePath = tf.keras.utils.get_file('Red_sunflower', origin=imageURl)
 
-epochs_range = range(epochs)
+img = tf.keras.utils.load_img(
+    imagePath, target_size=(img_height, img_width)
+)
+img_array = tf.keras.utils.img_to_array(img)
+img_array = tf.expand_dims(img_array, 0) # Create a batch
 
-plt.figure(figsize=(8, 8))
-plt.subplot(1, 2, 1)
-plt.plot(epochs_range, acc, label='Training Accuracy')
-plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-plt.legend(loc='lower right')
-plt.title('Training and Validation Accuracy')
+predictions = model.predict(img_array)
+score = tf.nn.softmax(predictions[0])
 
-plt.subplot(1, 2, 2)
-plt.plot(epochs_range, loss, label='Training Loss')
-plt.plot(epochs_range, val_loss, label='Validation Loss')
-plt.legend(loc='upper right')
-plt.title('Training and Validation Loss')
-plt.show()
-
-
+print(
+    "This image most likely belongs to {} with a {:.2f} percent confidence."
+    .format(class_names[np.argmax(score)], 100 * np.max(score))
+)
