@@ -137,8 +137,12 @@ plt.show()
 
 # Notice that the accuracy for training data is going up really fast but the accuracy for test data is kinda stuck
 # This is because the model is overfit: The model knows the training data too well and recognizes stuff that doesn't actually matter
-# Loss is going down for training but up for actual
+# Loss is going down for training but up for testing because of this overfitting phenomenon
 # Loss: penalty for bad prediction
+
+# Overfitting in more prevelant with small training data (something that we have here since I can't be bothered to get bigger datasets and takes too much space and might blow my computer up)
+
+
 
 
 
