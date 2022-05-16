@@ -11,19 +11,23 @@ from tensorflow.keras.models import Sequential
 
 print("Importing a bunch of stuff here")
 
-# get to files
+# Get to the data 
 
 from pathlib import Path
 data_dir = Path('data')
 image_count = len(list(data_dir.glob('*/*.jpg')))
 print(image_count)
 
+# Code to show images to ensure that I got to the files
 #hotdog = list(data_dir.glob('hotdog/*'))
 #image = mpimg.imread(str(hotdog[0]))
 #plt.imshow(image)
 #plt.show()
 
 
+# Create the dataset to train model
+# Dataset is split into 2 parts, one for training the model and one for checking
+# The 2 need to be seperate to prevent overfitting, something that we will cover later
 
 batch_size = 32
 img_height = 180
@@ -46,6 +50,8 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
   batch_size=batch_size)
 
 
+# Display some of the images within the dataset the ensure that nothing is messed up
+
 class_names = train_ds.class_names
 print(class_names)
 
@@ -63,6 +69,9 @@ for image_batch, labels_batch in train_ds:
   print(image_batch.shape)
   print(labels_batch.shape)
   break
+
+# Setup the model that is gonna be trained
+# This is where a bunch of the problems occured
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -92,12 +101,17 @@ model.compile(optimizer='adam',
 
 model.summary()
 
+
+# Actually do the training with everything setup
+
 epochs=10
 history = model.fit(
   train_ds,
   validation_data=val_ds,
   epochs=epochs
 )
+
+# Visualize the data via graphs
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -120,4 +134,11 @@ plt.plot(epochs_range, val_loss, label='Validation Loss')
 plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
+
+# Notice that the accuracy for training data is going up really fast but the accuracy for test data is kinda stuck
+# This is because the model is overfit: The model knows the training data too well and recognizes stuff that doesn't actually matter
+# Loss is going down for training but up for actual
+# Loss: penalty for bad prediction
+
+
 
