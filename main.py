@@ -181,3 +181,8 @@ print(
     "This image most likely belongs to {} with a {:.2f} percent confidence."
     .format(class_names[np.argmax(score)], 100 * np.max(score))
 )
+
+
+# Credit for tutorial: https://www.tensorflow.org/tutorials/images/classification
+# Credit for dataset: https://www.kaggle.com/datasets/yashvrdnjain/hotdognothotdog?resource=download
+# Credit for setup help: https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
