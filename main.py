@@ -9,3 +9,9 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 
 print("Importing a bunch of stuff here")
+
+# get to files
+
+from pathlib import Path
+p = Path('.')
+print([x for x in p.iterdir() if x.is_dir()])
